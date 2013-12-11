@@ -1,6 +1,9 @@
 package ru.fizteh.fivt.students.drozdowsky.utils;
 
+import ru.fizteh.fivt.storage.structured.Table;
+
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,18 +72,45 @@ public class Utils {
     public static HashMap<String, Method> getMethods(String[] commandNames, Class commandClass) {
         HashMap<String, Method> map = new HashMap<>();
         Method[] methods = commandClass.getMethods();
-        for (Method method : methods)
+        for (Method method : methods) {
             if (in(method.getName(), commandNames)) {
                 map.put(method.getName(), method);
             }
+        }
         return map;
     }
 
     public static boolean isValid(String name) {
-        return !(name == null || name.equals("") || name.contains(System.lineSeparator()) || name.contains(" ") || name.contains("\t"));
+        return !(name == null || name.equals("") || name.contains(System.lineSeparator())
+                || name.contains(" ") || name.contains("\t"));
     }
 
     public static boolean isValidTablename(String name) {
         return isValid(name) && !name.contains(File.separator) && !name.contains("\\");
+    }
+
+    public static void deleteDirectory(File toDelete) throws IOException {
+        File[] files = toDelete.listFiles();
+        if (files != null) {
+            for (File f: files) {
+                if (f.isDirectory()) {
+                    deleteDirectory(f);
+                } else {
+                    if (!f.delete()) {
+                        throw new IOException();
+                    }
+                }
+            }
+        }
+        if (!toDelete.delete()) {
+            throw new IOException();
+        }
+    }
+
+    public static ArrayList<Class<?>> getTableTypes(Table table) {
+        ArrayList<Class<?>> result = new ArrayList<>();
+        for (int i = 0; i < table.getColumnsCount(); i++)
+            result.add(table.getColumnType(i));
+        return result;
     }
 }
