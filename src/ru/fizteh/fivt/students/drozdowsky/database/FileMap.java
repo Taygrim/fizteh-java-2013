@@ -1,39 +1,44 @@
 package ru.fizteh.fivt.students.drozdowsky.database;
 
 import ru.fizteh.fivt.students.drozdowsky.utils.Pair;
+import ru.fizteh.fivt.students.drozdowsky.utils.Storable;
 
-import java.awt.geom.IllegalPathStateException;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 public class FileMap {
-    private HashMap<String, String> db;
+    private HashMap<String, Storable> db;
+    private List<Class<?>> types;
 
     static final int BUFFSIZE = 100000;
 
-    public FileMap() {
+    public FileMap(List<Class<?>> types) {
+        this.types = types;
         db = new HashMap<>();
     }
 
-    private FileMap(HashMap<String, String> db) {
-        this.db = (HashMap<String, String>) db.clone();
+    private FileMap(HashMap<String, Storable> db, List<Class<?>> types) {
+        this.types = types;
+        this.db = (HashMap<String, Storable>) db.clone();
     }
 
-    public String get(String key) {
+    public Storable get(String key) {
         return db.get(key);
     }
 
-    public String put(String key, String value) {
-        String result = db.get(key);
+    public Storable put(String key, Storable value) {
+        Storable result = db.get(key);
         db.put(key, value);
         return result;
     }
 
-    public String remove(String key) {
-        String result = db.get(key);
+    public Storable remove(String key) {
+        Storable result = db.get(key);
         db.remove(key);
         return result;
     }
@@ -46,7 +51,7 @@ public class FileMap {
         return db.keySet();
     }
 
-    void read(File dbPath) {
+    protected void read(File dbPath) throws IOException {
         try (FileInputStream inputDB = new FileInputStream(dbPath)) {
             ArrayList<Pair<String, Integer>> offset = new ArrayList<>();
 
@@ -106,15 +111,17 @@ public class FileMap {
                     }
                     prevOffset = currentOffset;
                     String value = new String(valueBuf.array(), "UTF-8");
-                    db.put(now.fst, value);
+                    try {
+                        db.put(now.fst, new Storable(types, value));
+                    } catch (ParseException e) {
+                        throw new IOException(e.toString());
+                    }
                 }
             }
-        } catch (IOException e) {
-            throw new IllegalPathStateException(dbPath.getAbsolutePath() + e.getMessage());
         }
     }
 
-    void write(File dbPath) {
+    protected void write(File dbPath) throws IOException {
         try (FileOutputStream out = new FileOutputStream(dbPath)) {
             ArrayList<Integer> length = new ArrayList<>();
             ArrayList<String> values = new ArrayList<>();
@@ -122,9 +129,9 @@ public class FileMap {
             int totalLength = 0;
             for (String key:db.keySet()) {
                 keys.add(key);
-                values.add(db.get(key));
+                values.add(db.get(key).toString());
                 totalLength += key.getBytes("UTF-8").length;
-                length.add(db.get(key).getBytes("UTF-8").length);
+                length.add(db.get(key).toString().getBytes("UTF-8").length);
                 totalLength += 4;
                 totalLength += "\0".getBytes("UTF-8").length;
             }
@@ -137,12 +144,10 @@ public class FileMap {
             for (int i = 0; i < keys.size(); i++) {
                 out.write(values.get(i).getBytes("UTF-8"));
             }
-        } catch (IOException e) {
-            throw new IllegalPathStateException(dbPath.getAbsolutePath() + e.getMessage());
         }
     }
 
-    protected FileMap clone() {
-        return new FileMap(db);
+    protected FileMap copy() {
+        return new FileMap(db, types);
     }
 }

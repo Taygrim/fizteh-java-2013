@@ -1,50 +1,50 @@
 package ru.fizteh.fivt.students.drozdowsky.database;
 
-import ru.fizteh.fivt.students.drozdowsky.commands.ShellController;
-import ru.fizteh.fivt.students.drozdowsky.PathController;
-import ru.fizteh.fivt.storage.strings.TableProvider;
+import ru.fizteh.fivt.storage.structured.ColumnFormatException;
+import ru.fizteh.fivt.storage.structured.Storeable;
+import ru.fizteh.fivt.storage.structured.Table;
+import ru.fizteh.fivt.storage.structured.TableProvider;
+import ru.fizteh.fivt.students.drozdowsky.utils.Storable;
 import ru.fizteh.fivt.students.drozdowsky.utils.Utils;
 
-import java.awt.geom.IllegalPathStateException;
 import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.HashMap;
+import java.util.List;
 
 public class MultiFileHashMap implements TableProvider {
     private File dir;
-    private PathController curDir;
     private HashMap<String, FileHashMap> database;
 
-    public MultiFileHashMap(String workingDir) {
+    public MultiFileHashMap(String workingDir) throws IOException {
         database = new HashMap<>();
         this.dir = new File(workingDir);
         if (!(dir.exists())) {
-            throw new IllegalPathStateException();
+            throw new IOException();
         }
         String[] content = dir.list();
         for (String directory : content) {
             File temp = new File(dir.getAbsoluteFile() + File.separator + directory);
             FileHashMap base = new FileHashMap(temp);
-            database.put(directory, null);
+            database.put(directory, base);
         }
-        curDir = new PathController(dir.getAbsolutePath());
     }
 
+    @Override
     public FileHashMap getTable(String name) {
         if (!Utils.isValidTablename(name)) {
             throw new IllegalArgumentException();
         }
         if (database.containsKey(name)) {
-            File table = new File(dir.getAbsolutePath() + File.separator + name);
-            if (database.get(name) == null) {
-                database.put(name, new FileHashMap(table));
-            }
             return database.get(name);
         } else {
             return null;
         }
     }
 
-    public FileHashMap createTable(String name) {
+    @Override
+    public FileHashMap createTable(String name, List<Class<?>> columnTypes) throws IOException {
         if (!Utils.isValidTablename(name)) {
             throw new IllegalArgumentException();
         }
@@ -53,26 +53,49 @@ public class MultiFileHashMap implements TableProvider {
         } else {
             File newTable = new File(dir.getAbsolutePath() + File.separator + name);
             if (!newTable.mkdir()) {
-                throw new IllegalPathStateException(newTable.getAbsolutePath() + ": Permission denied");
+                throw new IOException(newTable.getAbsolutePath());
             }
             database.put(name, new FileHashMap(newTable));
             return database.get(name);
         }
     }
 
-    public void removeTable(String name) {
+    @Override
+    public void removeTable(String name) throws IOException {
         if (!Utils.isValidTablename(name)) {
             throw new IllegalArgumentException();
         }
         if (database.containsKey(name)) {
-            ShellController t = new ShellController(curDir);
-            t.rm(name);
-            database.remove(name);
-
+            database.get(name).removeTable();
+            Utils.deleteDirectory(dir);
             database.remove(name);
         } else {
             throw new IllegalStateException();
         }
+    }
+
+    @Override
+    public Storeable deserialize(Table table, String value) throws ParseException {
+        return new Storable(Utils.getTableTypes(table), value);
+    }
+
+    @Override
+    public String serialize(Table table, Storeable value) throws ColumnFormatException {
+        if (Storable.validStoreable(value, Utils.getTableTypes(table))) {
+            return new Storable(Utils.getTableTypes(table), value).toString();
+        } else {
+            throw new ColumnFormatException();
+        }
+    }
+
+    @Override
+    public Storeable createFor(Table table) {
+        return new Storable(Utils.getTableTypes(table));
+    }
+
+    @Override
+    public Storeable createFor(Table table, List<?> values) throws ColumnFormatException, IndexOutOfBoundsException {
+        return new Storable(Utils.getTableTypes(table), values);
     }
 
     public void stopUsing(String name) {

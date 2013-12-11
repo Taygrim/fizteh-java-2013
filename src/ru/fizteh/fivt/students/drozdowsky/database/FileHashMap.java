@@ -1,35 +1,42 @@
 package ru.fizteh.fivt.students.drozdowsky.database;
 
-import java.awt.geom.IllegalPathStateException;
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
-import ru.fizteh.fivt.storage.strings.Table;
+import ru.fizteh.fivt.storage.structured.ColumnFormatException;
+import ru.fizteh.fivt.storage.structured.Storeable;
+import ru.fizteh.fivt.storage.structured.Table;
+import ru.fizteh.fivt.students.drozdowsky.utils.Storable;
 import ru.fizteh.fivt.students.drozdowsky.utils.Utils;
 
 public class FileHashMap implements Table {
     private static final int NDIRS = 16;
     private static final int NFILES = 16;
 
+    private boolean exists;
     private File db;
     private FileMap[][] base;
     private FileMap[][] baseBackUp;
+    private List<Class<?>> types;
 
-    public FileHashMap(File db) {
+    public FileHashMap(File db) throws IOException {
         this.db = db;
+        exists = true;
         base = new FileMap[NDIRS][NFILES];
+        types = new ArrayList<>();
         readDB();
         baseBackUp = new FileMap[NDIRS][NFILES];
         copy(baseBackUp, base);
     }
 
     public String getName() {
+        checkExistence();
         return db.getName();
     }
 
-    public String get(String key) {
+    public Storeable get(String key) {
+        checkExistence();
         if (!Utils.isValid(key)) {
             throw new IllegalArgumentException();
         }
@@ -38,20 +45,21 @@ public class FileHashMap implements Table {
         return base[nDir][nFile].get(key);
     }
 
-    public String put(String key, String value) {
-        if (value == null || value.equals("") || value.contains(System.lineSeparator())) {
+    public Storeable put(String key, Storeable value) throws ColumnFormatException {
+        checkExistence();
+        if (value == null || !Utils.isValid(key)) {
             throw new IllegalArgumentException();
         }
-        if (!Utils.isValid(key)) {
-            throw new IllegalArgumentException();
-        }
+
         int nDir = getDirNum(key);
         int nFile = getFileNum(key);
 
-        return base[nDir][nFile].put(key, value);
+        Storable myValue = new Storable(types, value);
+        return base[nDir][nFile].put(key, myValue);
     }
 
-    public String remove(String key) {
+    public Storeable remove(String key) {
+        checkExistence();
         if (!Utils.isValid(key)) {
             throw new IllegalArgumentException();
         }
@@ -61,6 +69,7 @@ public class FileHashMap implements Table {
     }
 
     public int size() {
+        checkExistence();
         int result = 0;
         for (int i = 0; i < NDIRS; i++) {
             for (int j = 0; j < NDIRS; j++) {
@@ -70,7 +79,8 @@ public class FileHashMap implements Table {
         return result;
     }
 
-    public int commit() {
+    public int commit() throws IOException {
+        checkExistence();
         int result = difference();
         writeDB();
         copy(baseBackUp, base);
@@ -78,12 +88,27 @@ public class FileHashMap implements Table {
     }
 
     public int rollback() {
+        checkExistence();
         int result = difference();
         copy(base, baseBackUp);
         return result;
     }
 
+    public int getColumnsCount() {
+        checkExistence();
+        return types.size();
+    }
+
+    public Class<?> getColumnType(int columnIndex) throws IndexOutOfBoundsException {
+        checkExistence();
+        if (columnIndex < 0 || columnIndex >= types.size()) {
+            throw new IndexOutOfBoundsException();
+        }
+        return types.get(columnIndex);
+    }
+
     public int difference() {
+        checkExistence();
         int result = 0;
         for (int i = 0; i < NDIRS; i++) {
             for (int j = 0; j < NDIRS; j++) {
@@ -112,8 +137,18 @@ public class FileHashMap implements Table {
         return result;
     }
 
-    public void close() {
+    public void checkExistence() {
+        if (!exists) {
+            throw new IllegalStateException();
+        }
+    }
+
+    public void close() throws IOException {
         writeDB();
+    }
+
+    public void removeTable() {
+        exists = false;
     }
 
     private int getDirNum(String key) {
@@ -138,14 +173,58 @@ public class FileHashMap implements Table {
         return (b / 16) % 16;
     }
 
-    private void readDB() {
-        if (db.exists() && !db.isDirectory()) {
-            throw new IllegalPathStateException(db.getAbsolutePath() + ": Not a directory");
+    private void readTypes() throws IOException {
+        File typeDescription = new File(db.toString() + File.separator + "signature.tsv");
+        if (typeDescription.exists() && !typeDescription.isFile()) {
+            throw new IOException(typeDescription.getAbsolutePath() + ": Not a file");
         }
+
+        if (!typeDescription.exists()) {
+            throw new IOException(db.getAbsolutePath() + ": No signature file");
+        }
+
+        Scanner scanner = new Scanner(typeDescription);
+        while (scanner.hasNext()) {
+            String type = scanner.next();
+            switch (type) {
+                case "int":
+                    types.add(Integer.class);
+                    break;
+                case "long":
+                    types.add(Long.class);
+                    break;
+                case "byte":
+                    types.add(Byte.class);
+                    break;
+                case "float":
+                    types.add(Float.class);
+                    break;
+                case "double":
+                    types.add(Double.class);
+                    break;
+                case "boolean":
+                    types.add(Boolean.class);
+                    break;
+                case "String":
+                    types.add(String.class);
+                    break;
+                default:
+                    throw new IOException(typeDescription.getAbsolutePath() + ": Not valid format");
+            }
+        }
+
+    }
+
+    private void readDB() throws IOException {
+        if (db.exists() && !db.isDirectory()) {
+            throw new IOException(db.getAbsolutePath() + ": Not a directory");
+        }
+
+        readTypes();
 
         for (int i = 0; i < NDIRS; i++) {
             for (int j = 0; j < NFILES; j++) {
-                base[i][j] = new FileMap();
+                base[i][j] = new FileMap(types);
             }
         }
 
@@ -176,11 +255,11 @@ public class FileHashMap implements Table {
         }
     }
 
-    private void writeDB() {
+    private void writeDB() throws IOException {
         for (int i = 0; i < NDIRS; i++) {
             File dirPath = new File(db.getAbsolutePath() + File.separator + Integer.toString(i) + ".dir");
             if (!dirPath.exists() && !dirPath.mkdir()) {
-                throw new IllegalPathStateException(dirPath.getAbsolutePath() + ": Permission denied");
+                throw new IOException(dirPath.getAbsolutePath() + ": Permission denied");
             }
             for (int j = 0; j < NFILES; j++) {
                 if (base[i][j] != null) {
@@ -188,15 +267,15 @@ public class FileHashMap implements Table {
                     if (!filePath.exists()) {
                         try {
                             if (!filePath.createNewFile()) {
-                                throw new IllegalPathStateException(filePath.getAbsolutePath() + ": Permission denied");
+                                throw new IOException(filePath.getAbsolutePath() + ": Permission denied");
                             }
                         } catch (IOException e) {
-                            throw new IllegalPathStateException(filePath.getAbsolutePath() + ": Permission denied");
+                            throw new IOException(filePath.getAbsolutePath() + ": Permission denied");
                         }
                     }
                     if (base[i][j].getKeys().size() == 0) {
                         if (filePath.exists() && !filePath.delete()) {
-                            throw new IllegalPathStateException(filePath.getAbsolutePath() + ": Permission denied");
+                            throw new IOException(filePath.getAbsolutePath() + ": Permission denied");
                         }
                     } else {
                         base[i][j].write(filePath);
@@ -204,7 +283,7 @@ public class FileHashMap implements Table {
                 }
             }
             if (dirPath.exists() && dirPath.list().length == 0 && !dirPath.delete()) {
-                throw new IllegalPathStateException(dirPath.getAbsolutePath() + ": Permission denied");
+                throw new IOException(dirPath.getAbsolutePath() + ": Permission denied");
             }
         }
     }
@@ -212,7 +291,7 @@ public class FileHashMap implements Table {
     private void copy(FileMap[][] a, FileMap[][] b) {
         for (int i = 0; i < NDIRS; i++) {
             for (int j = 0; j < NFILES; j++) {
-                a[i][j] = b[i][j].clone();
+                a[i][j] = b[i][j].copy();
             }
         }
     }
