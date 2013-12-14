@@ -35,7 +35,7 @@ public class FileHashMap implements Table {
         return db.getName();
     }
 
-    public Storeable get(String key) {
+    public Storable get(String key) {
         checkExistence();
         if (!Utils.isValid(key)) {
             throw new IllegalArgumentException();
@@ -45,7 +45,7 @@ public class FileHashMap implements Table {
         return base[nDir][nFile].get(key);
     }
 
-    public Storeable put(String key, Storeable value) throws ColumnFormatException {
+    public Storable put(String key, Storeable value) throws ColumnFormatException {
         checkExistence();
         if (value == null || !Utils.isValid(key)) {
             throw new IllegalArgumentException();
@@ -58,7 +58,7 @@ public class FileHashMap implements Table {
         return base[nDir][nFile].put(key, myValue);
     }
 
-    public Storeable remove(String key) {
+    public Storable remove(String key) {
         checkExistence();
         if (!Utils.isValid(key)) {
             throw new IllegalArgumentException();

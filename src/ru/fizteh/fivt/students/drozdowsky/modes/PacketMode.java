@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 public class PacketMode<T> {
     T controller;
-    private static final String[] NOWSCOMMANDS = {"put"};
+    private static final String[] NOWSCOMMANDS = {"put", "create"};
 
     public PacketMode(T controller) {
         this.controller = controller;

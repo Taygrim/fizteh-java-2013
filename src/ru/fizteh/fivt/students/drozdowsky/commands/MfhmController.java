@@ -2,8 +2,14 @@ package ru.fizteh.fivt.students.drozdowsky.commands;
 
 import ru.fizteh.fivt.students.drozdowsky.database.FileHashMap;
 import ru.fizteh.fivt.students.drozdowsky.database.MultiFileHashMap;
+import ru.fizteh.fivt.students.drozdowsky.utils.Storable;
+import ru.fizteh.fivt.students.drozdowsky.utils.Utils;
 
 import java.awt.geom.IllegalPathStateException;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MfhmController {
 
@@ -15,15 +21,56 @@ public class MfhmController {
         currentdb = null;
     }
 
-    public boolean create(String name) {
+    public boolean create(String tablename, String types) {
         try {
-            if (multiFileHashMap.createTable(name) != null) {
+            if (types.length() == 0 || !(types.charAt(0) == '(' && types.charAt(types.length() - 1) == ')')) {
+                System.err.println("create: not valid arguments");
+                return false;
+            }
+
+            types = types.substring(1, types.length());
+            String[] splittedTypes = types.split(" ");
+            List<Class<?>> typesAsClasses = new ArrayList<>();
+            for (String splittedType : splittedTypes) {
+                switch (splittedType) {
+                    case "int":
+                        typesAsClasses.add(Integer.class);
+                        break;
+                    case "long":
+                        typesAsClasses.add(Long.class);
+                        break;
+                    case "byte":
+                        typesAsClasses.add(Byte.class);
+                        break;
+                    case "float":
+                        typesAsClasses.add(Float.class);
+                        break;
+                    case "double":
+                        typesAsClasses.add(Double.class);
+                        break;
+                    case "boolean":
+                        typesAsClasses.add(Boolean.class);
+                        break;
+                    case "String":
+                        typesAsClasses.add(String.class);
+                        break;
+                    default:
+                        System.err.println("create: not valid arguments");
+                        return false;
+
+                }
+            }
+
+            if (multiFileHashMap.createTable(tablename, typesAsClasses) != null) {
                 System.out.println("created");
             } else {
-                System.out.println(name + " exists");
+                System.out.println(tablename + " exists");
             }
             return true;
         } catch (IllegalStateException | IllegalPathStateException e) {
+            System.err.println(e.getMessage());
+            return false;
+        } catch (IOException e) {
             System.err.println(e.getMessage());
             return false;
         }
@@ -43,6 +90,9 @@ public class MfhmController {
         } catch (IllegalStateException e) {
             System.out.println(name + " not exists");
             return true;
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            return false;
         }
     }
 
@@ -82,13 +132,19 @@ public class MfhmController {
             System.out.println("no table");
             return false;
         }
-        String result = currentdb.put(key, value);
-        if (result != null) {
-            System.out.println("overwrite " + result);
-        } else {
-            System.out.println("new");
+        try {
+            Storable result = currentdb.put(key, new Storable(Utils.getTableTypes(currentdb), value));
+            if (result != null) {
+                System.out.println("overwrite " + result.toString());
+            } else {
+                System.out.println("new");
+            }
+            return true;
+
+        } catch (ParseException e) {
+            System.err.println(e.getMessage());
+            return false;
         }
-        return true;
     }
 
     public boolean get(String key) {
@@ -96,9 +152,9 @@ public class MfhmController {
             System.out.println("no table");
             return false;
         }
-        String result = currentdb.get(key);
+        Storable result = currentdb.get(key);
         if (result != null) {
-            System.out.println("found " + result);
+            System.out.println("found " + result.toString());
         } else {
             System.out.println("not found");
         }
@@ -110,7 +166,7 @@ public class MfhmController {
             System.out.println("no table");
             return false;
         }
-        String result = currentdb.remove(key);
+        Storable result = currentdb.remove(key);
         if (result != null) {
             System.out.println("removed");
         } else {
@@ -121,7 +177,11 @@ public class MfhmController {
 
     public boolean exit() {
         if (currentdb != null) {
-            currentdb.close();
+            try {
+                currentdb.close();
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+            }
         }
         System.exit(0);
         return true;
@@ -132,7 +192,12 @@ public class MfhmController {
             System.out.println("no table");
             return false;
         }
-        System.out.println(currentdb.commit());
+        try {
+            System.out.println(currentdb.commit());
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
         return true;
     }
 
