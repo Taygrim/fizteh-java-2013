@@ -201,6 +201,9 @@ public class FileHashMap implements Table {
         }
 
         readTypes();
+        if (types.size() == 0) {
+            throw new IOException(db.getAbsolutePath() + ": empty signature.tsv");
+        }
 
         for (int i = 0; i < NDIRS; i++) {
             for (int j = 0; j < NFILES; j++) {
