@@ -32,6 +32,7 @@ public class MultiFileHashMapMain {
             start.execute(map, args);
         } catch (IllegalStateException | IllegalPathStateException | IOException e) {
             System.err.println(e.getMessage());
+            System.exit(1);
         }
     }
 }
