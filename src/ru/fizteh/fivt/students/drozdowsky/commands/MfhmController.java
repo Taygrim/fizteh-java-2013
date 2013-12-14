@@ -86,7 +86,7 @@ public class MfhmController {
 
     public boolean use(String name) {
         try {
-            if (currentdb != null) {
+            if (currentdb != null && currentdb.difference() > 0) {
                 errorsOuptut.println(currentdb.difference() + " unsaved changes");
                 return false;
             }

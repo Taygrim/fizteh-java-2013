@@ -4,20 +4,23 @@ import org.json.JSONException;
 import ru.fizteh.fivt.storage.structured.ColumnFormatException;
 import ru.fizteh.fivt.storage.structured.Storeable;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
+import java.util.HashSet;
 import java.util.List;
 import org.json.JSONArray;
 
 public class Storable implements Storeable{
 
-    private JSONArray values;
+    private String[] values;
     private Class<?>[] types;
 
     public Storable(List<Class<?>> types) {
         if (types == null) {
             throw new IllegalArgumentException("Got null signature");
         }
-        this.values = new JSONArray(new Object[types.size()]);
+        this.values = new String[types.size()];
         this.types = types.toArray(new Class<?>[types.size()]);
     }
 
@@ -34,13 +37,15 @@ public class Storable implements Storeable{
 
     public Storable(List<Class<?>> types, List<?> values) {
         this(types);
-        if (types.size() != values.size()) {
+        if (types.size() != this.values.length) {
             throw new IndexOutOfBoundsException();
         }
-        this.values = new JSONArray(values.toArray());
+
         for (int i = 0; i < types.size(); i++) {
-            if (this.values.get(i) != null && this.values.get(i).getClass() != this.types[i]) {
-                throw new ColumnFormatException();
+            if (!values.get(i).getClass().equals(this.types[i])) {
+                throw new ColumnFormatException("wrong type (" + "in position" + i + ")");
+            } else {
+                this.values[i] = values.get(i).toString();
             }
         }
     }
@@ -48,107 +53,108 @@ public class Storable implements Storeable{
     public Storable(List<Class<?>> types, String values) throws ParseException {
         this(types);
         try {
-            this.values = new JSONArray(values);
-        } catch (JSONException e) {
-            throw new ParseException("wrong type (" + e.getCause().getMessage() + ")", e.getCause().toString().indexOf('1'));
-        }
-
-        if (types.size() != this.values.length()) {
-            throw new ParseException("wrong type (" + "Not valid :" + ")", values.length());
-        }
-
-        for (int i = 0; i < types.size(); i++) {
-            if (this.values.get(i) != null && this.values.get(i).getClass() != this.types[i]) {
-                throw new ColumnFormatException("wrong type (" + "found " + this.values.get(i).getClass().toString()
-                        + ", expected" + this.types[i].toString() + ")");
+            JSONArray tempValues = new JSONArray(values);
+            if (types.size() != this.values.length) {
+                throw new ParseException("wrong type (" + "Not valid size" + ")", values.length());
             }
+
+            for (int i = 0; i < types.size(); i++) {
+                this.values[i] = tempValues.get(i).toString();
+                getObjectWithTypeAt(i, types.get(i));
+            }
+        } catch (JSONException e) {
+            throw new ParseException("wrong type (" + e.getCause().getMessage() + ")",
+                    e.getCause().toString().indexOf('1'));
         }
+
     }
 
     @Override
     public void setColumnAt(int columnIndex, Object value) throws ColumnFormatException, IndexOutOfBoundsException {
-        if (columnIndex < 0 || columnIndex >= values.length()) {
+        if (columnIndex < 0 || columnIndex >= values.length) {
             throw new IndexOutOfBoundsException();
         }
         if (value == null) {
-            values.put(columnIndex, (Object) null);
+            values[columnIndex] = (String) null;
         } else {
             if (!types[columnIndex].equals(value.getClass())) {
                 throw new ColumnFormatException();
             } else {
-                values.put(columnIndex, value);
+                values[columnIndex] = value.toString();
             }
         }
     }
 
     @Override
     public Object getColumnAt(int columnIndex) throws IndexOutOfBoundsException {
-        if (columnIndex < 0 || columnIndex >= values.length()) {
+        if (columnIndex < 0 || columnIndex >= values.length) {
             throw new IndexOutOfBoundsException();
         }
-        return values.get(columnIndex);
+        return getObjectWithTypeAt(columnIndex, types[columnIndex]);
     }
 
     @Override
     public Integer getIntAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        checkTypeAt(columnIndex, Integer.class);
-        return (Integer) getColumnAt(columnIndex);
+        return (Integer)getObjectWithTypeAt(columnIndex, Integer.class);
     }
 
     @Override
     public Long getLongAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        checkTypeAt(columnIndex, Integer.class);
-        return (Long) getColumnAt(columnIndex);
+        return (Long)getObjectWithTypeAt(columnIndex, Long.class);
     }
 
     @Override
     public Byte getByteAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        checkTypeAt(columnIndex, Integer.class);
-        return (Byte) getColumnAt(columnIndex);
+        return (Byte)getObjectWithTypeAt(columnIndex, Byte.class);
     }
 
     @Override
     public Float getFloatAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        checkTypeAt(columnIndex, Integer.class);
-        return (Float) getColumnAt(columnIndex);
+        return (Float)getObjectWithTypeAt(columnIndex, Float.class);
     }
 
     @Override
     public Double getDoubleAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        checkTypeAt(columnIndex, Integer.class);
-        return (Double) getColumnAt(columnIndex);
+        return (Double)getObjectWithTypeAt(columnIndex, Double.class);
     }
 
     @Override
     public Boolean getBooleanAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        checkTypeAt(columnIndex, Integer.class);
-        return (Boolean) getColumnAt(columnIndex);
+        return (Boolean)getObjectWithTypeAt(columnIndex, Boolean.class);
     }
 
     @Override
     public String getStringAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        checkTypeAt(columnIndex, Integer.class);
-        return (String) getColumnAt(columnIndex);
+        return (String)getObjectWithTypeAt(columnIndex, String.class);
     }
 
-    public int getLength() {
-        return values.length();
-    }
+    private Object getObjectWithTypeAt(int columnIndex, Class<?> type) {
+        if(columnIndex < 0 || columnIndex >= values.length) {
+            throw new IndexOutOfBoundsException();
+        }
 
-    private void checkTypeAt(int columnIndex, Class<?> type) {
-        if (!types[columnIndex].equals(type)) {
-            throw new ColumnFormatException("wrong type (expected " + type.toString() + ", but got "
-                    + types[columnIndex].toString() + ")");
+        try {
+            return type.getConstructor(String.class).newInstance(values[columnIndex]);
+        } catch (NumberFormatException e) {
+            throw new ColumnFormatException(e);
+        } catch (InvocationTargetException | NoSuchMethodException
+                | InstantiationException | IllegalAccessException e) {
+            throw  new ColumnFormatException(e);
         }
     }
 
     public String toString() {
-        return values.toString();
+        JSONArray result = new JSONArray();
+        for (int i = 0; i < types.length; i++) {
+            result.put(getObjectWithTypeAt(i, types[i]));
+        }
+        return result.toString();//maybe toString(1);
     }
 
     public static boolean validStoreable(Storeable stor, List<Class<?>> types) {
         for (int i = 0; i < types.size(); i++) {
             try {
+                Object temp = stor.getColumnAt(i);
                 if (!(stor.getColumnAt(i).getClass() == null || stor.getColumnAt(i).getClass().equals(types.get(i)))) {
                     return false;
                 }
@@ -163,5 +169,4 @@ public class Storable implements Storeable{
         }
         return false;
     }
-
 }
