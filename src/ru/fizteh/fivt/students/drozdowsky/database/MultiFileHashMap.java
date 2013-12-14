@@ -117,9 +117,7 @@ public class MultiFileHashMap implements TableProvider {
         if (!Utils.isValidTablename(name)) {
             throw new IllegalArgumentException();
         }
-        if (database.containsKey(name)) {
-            database.put(name, null);
-        } else {
+        if (!database.containsKey(name)) {
             throw new IllegalStateException();
         }
     }
