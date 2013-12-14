@@ -7,6 +7,7 @@ import ru.fizteh.fivt.students.drozdowsky.utils.Utils;
 
 import java.awt.geom.IllegalPathStateException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,16 +16,24 @@ public class MfhmController {
 
     FileHashMap currentdb;
     MultiFileHashMap multiFileHashMap;
+    PrintStream errorsOuptut;
 
     public MfhmController(MultiFileHashMap multiFileHashMap) {
         this.multiFileHashMap = multiFileHashMap;
+        errorsOuptut = System.err;
+        currentdb = null;
+    }
+
+    public MfhmController(MultiFileHashMap multiFileHashMap, PrintStream errorsOutput) {
+        this.multiFileHashMap = multiFileHashMap;
+        this.errorsOuptut = errorsOutput;
         currentdb = null;
     }
 
     public boolean create(String tablename, String types) {
         try {
             if (types.length() == 0 || !(types.charAt(0) == '(' && types.charAt(types.length() - 1) == ')')) {
-                System.err.println("create: not valid arguments");
+                errorsOuptut.println("create: not valid arguments");
                 return false;
             }
 
@@ -55,7 +64,7 @@ public class MfhmController {
                         typesAsClasses.add(String.class);
                         break;
                     default:
-                        System.err.println("create: not valid arguments");
+                        errorsOuptut.println("create: not valid arguments");
                         return false;
 
                 }
@@ -68,10 +77,10 @@ public class MfhmController {
             }
             return true;
         } catch (IllegalStateException | IllegalPathStateException e) {
-            System.err.println(e.getMessage());
+            errorsOuptut.println(e.getMessage());
             return false;
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            errorsOuptut.println(e.getMessage());
             return false;
         }
     }
@@ -85,13 +94,13 @@ public class MfhmController {
             System.out.println("dropped");
             return true;
         } catch (IllegalPathStateException e) {
-            System.err.println(e.getMessage());
+            errorsOuptut.println(e.getMessage());
             return false;
         } catch (IllegalStateException e) {
             System.out.println(name + " not exists");
             return true;
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            errorsOuptut.println(e.getMessage());
             return false;
         }
     }
@@ -99,7 +108,7 @@ public class MfhmController {
     public boolean use(String name) {
         try {
             if (currentdb != null) {
-                System.err.println(currentdb.difference() + " unsaved changes");
+                errorsOuptut.println(currentdb.difference() + " unsaved changes");
                 return false;
             }
             if (multiFileHashMap.getTable(name) != null) {
@@ -113,7 +122,7 @@ public class MfhmController {
             }
             return true;
         } catch (IllegalStateException | IllegalPathStateException e) {
-            System.err.println(e.getMessage());
+            errorsOuptut.println(e.getMessage());
             return false;
         }
     }
@@ -142,7 +151,7 @@ public class MfhmController {
             return true;
 
         } catch (ParseException e) {
-            System.err.println(e.getMessage());
+            errorsOuptut.println(e.getMessage());
             return false;
         }
     }
@@ -180,7 +189,7 @@ public class MfhmController {
             try {
                 currentdb.close();
             } catch (IOException e) {
-                System.err.println(e.getMessage());
+                errorsOuptut.println(e.getMessage());
             }
         }
         System.exit(0);
@@ -195,7 +204,7 @@ public class MfhmController {
         try {
             System.out.println(currentdb.commit());
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            errorsOuptut.println(e.getMessage());
             return false;
         }
         return true;
