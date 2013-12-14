@@ -50,16 +50,17 @@ public class Storable implements Storeable{
         try {
             this.values = new JSONArray(values);
         } catch (JSONException e) {
-            throw new ParseException(e.getCause().getMessage(), e.getCause().toString().indexOf('1'));
+            throw new ParseException("wrong type (" + e.getCause().getMessage() + ")", e.getCause().toString().indexOf('1'));
         }
 
         if (types.size() != this.values.length()) {
-            throw new ParseException("Not valid :", values.length());
+            throw new ParseException("wrong type (" + "Not valid :" + ")", values.length());
         }
 
         for (int i = 0; i < types.size(); i++) {
             if (this.values.get(i) != null && this.values.get(i).getClass() != this.types[i]) {
-                throw new ColumnFormatException();
+                throw new ColumnFormatException("wrong type (" + "found " + this.values.get(i).getClass().toString()
+                        + ", expected" + this.types[i].toString() + ")");
             }
         }
     }
