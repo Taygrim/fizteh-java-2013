@@ -109,8 +109,9 @@ public class Utils {
 
     public static ArrayList<Class<?>> getTableTypes(Table table) {
         ArrayList<Class<?>> result = new ArrayList<>();
-        for (int i = 0; i < table.getColumnsCount(); i++)
+        for (int i = 0; i < table.getColumnsCount(); i++) {
             result.add(table.getColumnType(i));
+        }
         return result;
     }
 }

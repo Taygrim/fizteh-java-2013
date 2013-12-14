@@ -20,7 +20,9 @@ public class CommandExecutor<T> {
             } else {
                 System.err.println("Not valid number of arguments");
             }
-        } catch (IllegalAccessException | IllegalStateException | InvocationTargetException | IllegalArgumentException e) {
+        } catch (IllegalAccessException | IllegalStateException e)  {
+            System.err.println(e.getMessage());
+        } catch (InvocationTargetException | IllegalArgumentException e) {
             System.err.println(e.getMessage());
         }
         return false;

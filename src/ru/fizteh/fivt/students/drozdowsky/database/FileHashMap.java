@@ -180,7 +180,7 @@ public class FileHashMap implements Table {
         }
 
         if (!typeDescription.exists()) {
-            throw new IOException(db.getAbsolutePath() + ": No signature file");
+            throw new IOException(/* db.getAbsolutePath() + ": */ "no signature.tsv");
         }
 
         Scanner scanner = new Scanner(typeDescription);
