@@ -4,10 +4,8 @@ import org.json.JSONException;
 import ru.fizteh.fivt.storage.structured.ColumnFormatException;
 import ru.fizteh.fivt.storage.structured.Storeable;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
-import java.util.HashSet;
 import java.util.List;
 import org.json.JSONArray;
 
@@ -129,7 +127,7 @@ public class Storable implements Storeable{
     }
 
     private Object getObjectWithTypeAt(int columnIndex, Class<?> type) {
-        if(columnIndex < 0 || columnIndex >= values.length) {
+        if (columnIndex < 0 || columnIndex >= values.length) {
             throw new IndexOutOfBoundsException();
         }
 
@@ -148,7 +146,7 @@ public class Storable implements Storeable{
         for (int i = 0; i < types.length; i++) {
             result.put(getObjectWithTypeAt(i, types[i]));
         }
-        return result.toString();//maybe toString(1);
+        return result.toString();
     }
 
     public static boolean validStoreable(Storeable stor, List<Class<?>> types) {
