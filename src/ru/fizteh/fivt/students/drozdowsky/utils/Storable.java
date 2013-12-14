@@ -95,37 +95,37 @@ public class Storable implements Storeable{
 
     @Override
     public Integer getIntAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        return (Integer)getObjectWithTypeAt(columnIndex, Integer.class);
+        return (Integer) getObjectWithTypeAt(columnIndex, Integer.class);
     }
 
     @Override
     public Long getLongAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        return (Long)getObjectWithTypeAt(columnIndex, Long.class);
+        return (Long) getObjectWithTypeAt(columnIndex, Long.class);
     }
 
     @Override
     public Byte getByteAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        return (Byte)getObjectWithTypeAt(columnIndex, Byte.class);
+        return (Byte) getObjectWithTypeAt(columnIndex, Byte.class);
     }
 
     @Override
     public Float getFloatAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        return (Float)getObjectWithTypeAt(columnIndex, Float.class);
+        return (Float) getObjectWithTypeAt(columnIndex, Float.class);
     }
 
     @Override
     public Double getDoubleAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        return (Double)getObjectWithTypeAt(columnIndex, Double.class);
+        return (Double) getObjectWithTypeAt(columnIndex, Double.class);
     }
 
     @Override
     public Boolean getBooleanAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        return (Boolean)getObjectWithTypeAt(columnIndex, Boolean.class);
+        return (Boolean) getObjectWithTypeAt(columnIndex, Boolean.class);
     }
 
     @Override
     public String getStringAt(int columnIndex) throws ColumnFormatException, IndexOutOfBoundsException {
-        return (String)getObjectWithTypeAt(columnIndex, String.class);
+        return (String) getObjectWithTypeAt(columnIndex, String.class);
     }
 
     private Object getObjectWithTypeAt(int columnIndex, Class<?> type) {
