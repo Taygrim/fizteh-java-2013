@@ -8,6 +8,7 @@ import ru.fizteh.fivt.students.drozdowsky.utils.Storable;
 import ru.fizteh.fivt.students.drozdowsky.utils.Utils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
@@ -55,6 +56,20 @@ public class MultiFileHashMap implements TableProvider {
             if (!newTable.mkdir()) {
                 throw new IOException(newTable.getAbsolutePath());
             }
+            File signature = new File(newTable.getAbsolutePath() + File.separator + "signature.tsv");
+            if (!signature.createNewFile()) {
+                throw new IOException(signature.getAbsolutePath());
+            }
+
+            FileOutputStream signatureOutput = new FileOutputStream(signature);
+            for (Class<?> columnType : columnTypes) {
+                if (Utils.classToName(columnType) != null) {
+                    signatureOutput.write((Utils.classToName(columnType) + " ").getBytes());
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            }
+
             database.put(name, new FileHashMap(newTable));
             return database.get(name);
         }

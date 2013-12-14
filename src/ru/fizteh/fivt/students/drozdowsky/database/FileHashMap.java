@@ -180,36 +180,16 @@ public class FileHashMap implements Table {
         }
 
         if (!typeDescription.exists()) {
-            throw new IOException(/* db.getAbsolutePath() + ": */ "no signature.tsv");
+            throw new IOException(db.getAbsolutePath() + ": no signature.tsv");
         }
 
         Scanner scanner = new Scanner(typeDescription);
         while (scanner.hasNext()) {
             String type = scanner.next();
-            switch (type) {
-                case "int":
-                    types.add(Integer.class);
-                    break;
-                case "long":
-                    types.add(Long.class);
-                    break;
-                case "byte":
-                    types.add(Byte.class);
-                    break;
-                case "float":
-                    types.add(Float.class);
-                    break;
-                case "double":
-                    types.add(Double.class);
-                    break;
-                case "boolean":
-                    types.add(Boolean.class);
-                    break;
-                case "String":
-                    types.add(String.class);
-                    break;
-                default:
-                    throw new IOException(typeDescription.getAbsolutePath() + ": Not valid format");
+            if (Utils.nameToClass(type) != null) {
+                types.add(Utils.nameToClass(type));
+            } else {
+                throw new IOException(typeDescription.getAbsolutePath() + ": Not valid format");
             }
         }
 
@@ -230,6 +210,9 @@ public class FileHashMap implements Table {
 
         File[] directories = db.listFiles();
         for (File directory : (directories != null ? directories : new File[0])) {
+            if (directory.getName().equals("signature.tsv")) {
+                continue;
+            }
             int nDir = dirNameInRange(directory.getName(), NDIRS);
             if (nDir == -1 || !(directory.isDirectory())) {
                 throw new IllegalStateException(db.getAbsolutePath() + ": Not valid database " + directory.getName());

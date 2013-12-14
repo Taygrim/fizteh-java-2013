@@ -37,36 +37,15 @@ public class MfhmController {
                 return false;
             }
 
-            types = types.substring(1, types.length());
+            types = types.substring(1, types.length() - 1);
             String[] splittedTypes = types.split(" ");
             List<Class<?>> typesAsClasses = new ArrayList<>();
             for (String splittedType : splittedTypes) {
-                switch (splittedType) {
-                    case "int":
-                        typesAsClasses.add(Integer.class);
-                        break;
-                    case "long":
-                        typesAsClasses.add(Long.class);
-                        break;
-                    case "byte":
-                        typesAsClasses.add(Byte.class);
-                        break;
-                    case "float":
-                        typesAsClasses.add(Float.class);
-                        break;
-                    case "double":
-                        typesAsClasses.add(Double.class);
-                        break;
-                    case "boolean":
-                        typesAsClasses.add(Boolean.class);
-                        break;
-                    case "String":
-                        typesAsClasses.add(String.class);
-                        break;
-                    default:
+                if (Utils.nameToClass(splittedType) == null) {
                         errorsOuptut.println("create: not valid arguments");
                         return false;
-
+                } else {
+                    typesAsClasses.add(Utils.nameToClass(splittedType));
                 }
             }
 
