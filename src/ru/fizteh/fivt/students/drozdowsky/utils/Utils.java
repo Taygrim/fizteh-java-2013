@@ -114,4 +114,46 @@ public class Utils {
         }
         return result;
     }
+
+
+    public static Class<?> nameToClass(String name) {
+        switch (name) {
+            case "int":
+                return Integer.class;
+            case "long":
+                return Long.class;
+            case "byte":
+                return Byte.class;
+            case "float":
+                return Float.class;
+            case "double":
+                return Double.class;
+            case "boolean":
+                return Boolean.class;
+            case "String":
+                return String.class;
+            default:
+                return null;
+        }
+    }
+
+    public static String classToName(Class<?> c) {
+        if (c.equals(Integer.class)) {
+            return "int";
+        } else if (c.equals(Long.class)) {
+            return "long";
+        } else if (c.equals(Byte.class)) {
+            return "byte";
+        } else if (c.equals(Float.class)) {
+            return "float";
+        } else if (c.equals(Double.class)) {
+            return "double";
+        } else if (c.equals(Boolean.class)) {
+            return "boolean";
+        } else if (c.equals(String.class)) {
+            return "String";
+        } else {
+            return null;
+        }
+    }
 }
