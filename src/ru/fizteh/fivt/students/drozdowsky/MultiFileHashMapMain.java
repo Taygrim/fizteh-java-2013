@@ -7,6 +7,7 @@ import ru.fizteh.fivt.students.drozdowsky.database.MultiFileHashMap;
 
 import java.awt.geom.IllegalPathStateException;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
@@ -28,7 +29,7 @@ public class MultiFileHashMapMain {
             MfhmController db = new MfhmController(new MultiFileHashMap(dbDirectory));
             ModeController<MfhmController> start = new ModeController<>(db);
             start.execute(map, args);
-        } catch (IllegalStateException | IllegalPathStateException e) {
+        } catch (IllegalStateException | IllegalPathStateException | IOException e) {
             System.err.println(e.getMessage());
         }
     }
