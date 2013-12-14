@@ -26,7 +26,8 @@ public class MultiFileHashMapMain {
         String[] commandNames = {"create", "drop", "use", "put", "get", "remove", "exit", "size", "commit", "rollback"};
         HashMap<String, Method> map = Utils.getMethods(commandNames, MfhmController.class);
         try {
-            MfhmController db = new MfhmController(new MultiFileHashMap(dbDirectory), (args.length == 0 ? System.out : System.err));
+            MfhmController db = new MfhmController(new MultiFileHashMap(dbDirectory),
+                                                   (args.length == 0 ? System.out : System.err));
             ModeController<MfhmController> start = new ModeController<>(db);
             start.execute(map, args);
         } catch (IllegalStateException | IllegalPathStateException | IOException e) {
