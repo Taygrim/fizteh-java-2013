@@ -223,7 +223,7 @@ public class FileHashMap implements Table {
 
             File[] files = directory.listFiles();
             if (files == null || files.length == 0) {
-                throw new IOException(db.getAbsolutePath() + ": Not valid database " + directory.getName());
+                throw new IOException(db.getAbsolutePath() + ": Empty directory " + directory.getName());
             }
 
             for (File file : files) {
@@ -234,6 +234,9 @@ public class FileHashMap implements Table {
 
                 base[nDir][nFile].read(file);
                 Set<String> keys = base[nDir][nFile].getKeys();
+                if (keys.size() == 0) {
+                    throw new IOException(db.getAbsolutePath() + ": Empty file" + file.getName());
+                }
                 for (String key : keys) {
                     int realNDir = getDirNum(key);
                     int realNFile = getFileNum(key);
