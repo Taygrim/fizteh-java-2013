@@ -46,7 +46,7 @@ public class MultiFileHashMap implements TableProvider {
 
     @Override
     public FileHashMap createTable(String name, List<Class<?>> columnTypes) throws IOException {
-        if (!Utils.isValidTablename(name)) {
+        if (!Utils.isValidTablename(name) || columnTypes.size() == 0 || columnTypes == null) {
             throw new IllegalArgumentException();
         }
         if (database.containsKey(name)) {
