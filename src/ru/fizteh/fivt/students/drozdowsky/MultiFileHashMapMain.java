@@ -15,10 +15,6 @@ import java.util.HashMap;
 public class MultiFileHashMapMain {
 
     public static void main(String[] args) {
-        MfhmProviderFactory factory = new MfhmProviderFactory();
-        try {
-            factory.create("/root/some-not-existing-dir");
-        } catch (IOException e) { }
         String dbDirectory = System.getProperty("fizteh.db.dir");
         if (dbDirectory == null) {
             System.err.println("No database location");
