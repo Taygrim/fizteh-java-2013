@@ -218,14 +218,18 @@ public class FileHashMap implements Table {
             }
             int nDir = dirNameInRange(directory.getName(), NDIRS);
             if (nDir == -1 || !(directory.isDirectory())) {
-                throw new IllegalStateException(db.getAbsolutePath() + ": Not valid database " + directory.getName());
+                throw new IOException(db.getAbsolutePath() + ": Not valid database " + directory.getName());
             }
 
             File[] files = directory.listFiles();
-            for (File file : (files != null ? files : new File[0])) {
+            if (files == null) {
+                throw new IOException(db.getAbsolutePath() + ": Not valid database " + directory.getName());
+            }
+
+            for (File file : files) {
                 int nFile = fileNameInRange(file.getName(), NFILES);
                 if (nFile == -1 || !(file.isFile())) {
-                    throw new IllegalStateException(db.getAbsolutePath() + ": Not valid database " + file.getName());
+                    throw new IOException(db.getAbsolutePath() + ": Not valid database " + file.getName());
                 }
 
                 base[nDir][nFile].read(file);
@@ -234,7 +238,7 @@ public class FileHashMap implements Table {
                     int realNDir = getDirNum(key);
                     int realNFile = getFileNum(key);
                     if (!(nDir == realNDir && nFile == realNFile)) {
-                        throw new IllegalStateException(db.getAbsolutePath() + ": Not valid database");
+                        throw new IOException(db.getAbsolutePath() + ": Not valid database");
                     }
                 }
             }
