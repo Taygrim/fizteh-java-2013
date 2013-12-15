@@ -49,6 +49,11 @@ public class MultiFileHashMap implements TableProvider {
         if (!Utils.isValidTablename(name) || columnTypes == null || columnTypes.size() == 0) {
             throw new IllegalArgumentException();
         }
+        for (Class<?> columnType : columnTypes) {
+            if (columnType == null || Utils.classToName(columnType) == null) {
+                throw new IllegalArgumentException();
+            }
+        }
         if (database.containsKey(name)) {
             return null;
         } else {
