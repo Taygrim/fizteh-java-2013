@@ -222,7 +222,7 @@ public class FileHashMap implements Table {
             }
 
             File[] files = directory.listFiles();
-            if (files == null) {
+            if (files == null || files.length == 0) {
                 throw new IOException(db.getAbsolutePath() + ": Not valid database " + directory.getName());
             }
 
