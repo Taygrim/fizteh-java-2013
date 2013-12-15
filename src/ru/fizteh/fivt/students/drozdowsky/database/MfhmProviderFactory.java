@@ -9,11 +9,13 @@ import java.io.IOException;
 public class MfhmProviderFactory implements TableProviderFactory {
     public MultiFileHashMap create(String dir) throws IOException {
         if (!Utils.isValid(dir)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(dir);
         }
-
-        if (!(new File(dir).isDirectory())) {
+        if (!(new File(dir).exists())) {
             throw new IOException(dir);
+        }
+        if (!(new File(dir).isDirectory())) {
+            throw new IllegalArgumentException(dir);
         }
         return new MultiFileHashMap(dir);
     }
