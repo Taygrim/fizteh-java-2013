@@ -131,6 +131,10 @@ public class Storable implements Storeable{
             throw new IndexOutOfBoundsException();
         }
 
+        if (values[columnIndex] == null) {
+            return null;
+        }
+
         try {
             return type.getConstructor(String.class).newInstance(values[columnIndex]);
         } catch (NumberFormatException e) {
@@ -153,7 +157,7 @@ public class Storable implements Storeable{
         for (int i = 0; i < types.size(); i++) {
             try {
                 Object temp = stor.getColumnAt(i);
-                if (!(stor.getColumnAt(i).getClass() == null || stor.getColumnAt(i).getClass().equals(types.get(i)))) {
+                if (temp != null && temp.getClass().equals(types.get(i))) {
                     return false;
                 }
             } catch (IndexOutOfBoundsException e) {
