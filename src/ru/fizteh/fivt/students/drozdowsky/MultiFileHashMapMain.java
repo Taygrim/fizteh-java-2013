@@ -1,6 +1,7 @@
 package ru.fizteh.fivt.students.drozdowsky;
 
 import ru.fizteh.fivt.students.drozdowsky.commands.MfhmController;
+import ru.fizteh.fivt.students.drozdowsky.database.MfhmProviderFactory;
 import ru.fizteh.fivt.students.drozdowsky.utils.Utils;
 import ru.fizteh.fivt.students.drozdowsky.modes.ModeController;
 import ru.fizteh.fivt.students.drozdowsky.database.MultiFileHashMap;
@@ -14,6 +15,10 @@ import java.util.HashMap;
 public class MultiFileHashMapMain {
 
     public static void main(String[] args) {
+        MfhmProviderFactory factory = new MfhmProviderFactory();
+        try {
+            factory.create("/root/some-not-existing-dir");
+        } catch (IOException e) { }
         String dbDirectory = System.getProperty("fizteh.db.dir");
         if (dbDirectory == null) {
             System.err.println("No database location");
