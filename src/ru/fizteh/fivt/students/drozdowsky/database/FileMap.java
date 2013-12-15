@@ -119,6 +119,9 @@ public class FileMap {
                 }
             }
         }
+        if (db.size() == 0) {
+            throw new IOException("Empty file");
+        }
     }
 
     protected void write(File dbPath) throws IOException {
