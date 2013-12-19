@@ -131,7 +131,7 @@ public class Storable implements Storeable{
             throw new IndexOutOfBoundsException();
         }
 
-        if (values[columnIndex] == null) {
+        if (values[columnIndex] == null || values[columnIndex].toString().equals("null")) {
             return null;
         }
 
@@ -157,7 +157,7 @@ public class Storable implements Storeable{
         for (int i = 0; i < types.size(); i++) {
             try {
                 Object temp = stor.getColumnAt(i);
-                if (temp != null && temp.getClass().equals(types.get(i))) {
+                if (temp != null && !temp.getClass().equals(types.get(i))) {
                     return false;
                 }
             } catch (IndexOutOfBoundsException e) {
