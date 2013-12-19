@@ -157,7 +157,7 @@ public class Storable implements Storeable{
 
         Class<?>[] typesToCompare = toCompare.getTypes();
 
-        if(typesToCompare.length != types.length) {
+        if (typesToCompare.length != types.length) {
             return false;
         }
 
@@ -171,14 +171,14 @@ public class Storable implements Storeable{
             try {
                 Object temp1 = toCompare.getColumnAt(i);
                 Object temp2 = this.getColumnAt(i);
-                if(temp1 == null || temp2 == null) {
-                    if(temp1 == null && temp2 == null) {
+                if (temp1 == null || temp2 == null) {
+                    if (temp1 == null && temp2 == null) {
                         continue;
                     } else {
                         return false;
                     }
                 }
-                if(!temp1.equals(temp2)) {
+                if (!temp1.equals(temp2)) {
                     return false;
                 }
             } catch (IndexOutOfBoundsException e) {
