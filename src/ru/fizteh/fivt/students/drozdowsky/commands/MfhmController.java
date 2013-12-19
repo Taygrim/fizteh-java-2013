@@ -38,7 +38,7 @@ public class MfhmController {
             }
 
             types = types.substring(1, types.length() - 1);
-            String[] splittedTypes = types.split(" ");
+            String[] splittedTypes = types.split("[ \t]");
 
             if (splittedTypes.length == 0) {
                 errorsOuptut.println("wrong type (create)");

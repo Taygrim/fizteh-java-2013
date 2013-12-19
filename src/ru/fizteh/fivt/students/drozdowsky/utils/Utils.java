@@ -41,7 +41,7 @@ public class Utils {
         for (String arg : args) {
             int last = -1;
             for (int i = 0; i < arg.length(); i++) {
-                if (!noWS && arg.charAt(i) == ' ' || arg.charAt(i) == '\t') {
+                if (!noWS && (arg.charAt(i) == ' ' || arg.charAt(i) == '\t')) {
                     if (last + 1 != i) {
                         tempArgs.add(arg.substring(last + 1, i).trim());
                         if (tempArgs.size() == 2 && in(tempArgs.get(0), noWSCommands)) {
