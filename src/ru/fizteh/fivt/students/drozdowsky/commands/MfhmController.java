@@ -42,7 +42,7 @@ public class MfhmController {
             List<Class<?>> typesAsClasses = new ArrayList<>();
             for (String splittedType : splittedTypes) {
                 if (Utils.nameToClass(splittedType) == null) {
-                        errorsOuptut.println("create: not valid arguments");
+                        errorsOuptut.println("wrong type (create)");
                         return false;
                 } else {
                     typesAsClasses.add(Utils.nameToClass(splittedType));
