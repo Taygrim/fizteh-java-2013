@@ -87,7 +87,7 @@ public class MultiFileHashMap implements TableProvider {
         }
         if (database.containsKey(name)) {
             database.get(name).removeTable();
-            Utils.deleteDirectory(dir);
+            Utils.deleteDirectory(new File(dir.getCanonicalPath() + File.separator + name));
             database.remove(name);
         } else {
             throw new IllegalStateException();
