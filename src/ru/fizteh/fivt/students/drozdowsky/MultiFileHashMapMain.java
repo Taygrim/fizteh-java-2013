@@ -20,7 +20,7 @@ public class MultiFileHashMapMain {
             System.err.println("No database location");
             System.exit(1);
         }
-        if (!new File(dbDirectory).isDirectory()) {
+        if (!new File(dbDirectory).isDirectory() && !new File(dbDirectory).mkdir()) {
             System.err.println(dbDirectory + ": not a directory");
             System.exit(1);
         }
