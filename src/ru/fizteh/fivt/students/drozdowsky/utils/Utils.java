@@ -82,7 +82,7 @@ public class Utils {
 
     public static boolean isValid(String name) {
         return !(name == null || name.equals("") || name.contains(System.lineSeparator())
-                || name.contains(" ") || name.contains("\t"));
+                || name.contains(" ") || name.contains("\t") || name.contains("\r") || name.contains("\n"));
     }
 
     public static boolean isValidTablename(String name) {

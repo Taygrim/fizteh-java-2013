@@ -16,7 +16,7 @@ import java.util.HashMap;
 public class MultiFileHashMapMain {
 
     public static void main(String[] args) {
-        /*try {
+        /* try {
             MultiFileHashMap temp = new MultiFileHashMap("/Users/00/Documents/Programming/Java/multibd");
             FileHashMap temp2 = temp.getTable("asd");
             //Storeable temp3 = temp.createFor(temp2);
@@ -25,10 +25,10 @@ public class MultiFileHashMapMain {
             Storeable value = temp.createFor(temp2);
             value.setColumnAt(0, (byte) 123);
             value.setColumnAt(1, false);
-            temp2.put("asd", value);
+            temp2.put("key\u005Cr1", value);
         } catch (IOException e) {
 
-        }   */
+        }  */
         String dbDirectory = System.getProperty("fizteh.db.dir");
         if (dbDirectory == null) {
             System.err.println("No database location");
