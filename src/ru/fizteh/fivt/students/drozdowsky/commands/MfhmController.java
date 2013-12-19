@@ -72,10 +72,10 @@ public class MfhmController {
 
     public boolean drop(String name) {
         try {
-            multiFileHashMap.removeTable(name);
-            if (name.equals(currentdb.getName())) {
+            if (currentdb != null && name.equals(currentdb.getName())) {
                 currentdb = null;
             }
+            multiFileHashMap.removeTable(name);
             System.out.println("dropped");
             return true;
         } catch (IllegalPathStateException e) {
