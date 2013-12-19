@@ -129,7 +129,7 @@ public class MfhmController {
         try {
             Storable result = currentdb.put(key, new Storable(Utils.getTableTypes(currentdb), value));
             if (result != null) {
-                System.out.println("overwrite " + result.toString());
+                System.out.println("overwrite\n" + result.toString());
             } else {
                 System.out.println("new");
             }
@@ -148,7 +148,7 @@ public class MfhmController {
         }
         Storable result = currentdb.get(key);
         if (result != null) {
-            System.out.println("found " + result.toString());
+            System.out.println("found\n" + result.toString());
         } else {
             System.out.println("not found");
         }
