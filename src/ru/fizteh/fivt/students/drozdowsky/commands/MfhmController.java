@@ -39,6 +39,12 @@ public class MfhmController {
 
             types = types.substring(1, types.length() - 1);
             String[] splittedTypes = types.split(" ");
+
+            if (splittedTypes.length == 0) {
+                errorsOuptut.println("wrong type (create)");
+                return false;
+            }
+
             List<Class<?>> typesAsClasses = new ArrayList<>();
             for (String splittedType : splittedTypes) {
                 if (Utils.nameToClass(splittedType) == null) {
