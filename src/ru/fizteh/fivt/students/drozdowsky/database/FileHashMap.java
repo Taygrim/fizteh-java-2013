@@ -129,7 +129,7 @@ public class FileHashMap implements Table {
 
         for (String x : a.getKeys()) {
             if (b.getKeys().contains(x)) {
-                if (!a.get(x).equals(b.get(x))) {
+                if (!a.get(x).theSame(b.get(x))) {
                     result++;
                 }
             }

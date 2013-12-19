@@ -73,7 +73,7 @@ public class Storable implements Storeable{
             throw new IndexOutOfBoundsException();
         }
         if (value == null) {
-            values[columnIndex] = (String) null;
+            values[columnIndex] = null;
         } else {
             if (!types[columnIndex].equals(value.getClass())) {
                 throw new ColumnFormatException();
@@ -131,7 +131,7 @@ public class Storable implements Storeable{
             throw new IndexOutOfBoundsException();
         }
 
-        if (values[columnIndex] == null || values[columnIndex].toString().equals("null")) {
+        if (values[columnIndex] == null || values[columnIndex].equals("null")) {
             return null;
         }
 
@@ -151,6 +151,45 @@ public class Storable implements Storeable{
             result.put(getObjectWithTypeAt(i, types[i]));
         }
         return result.toString();
+    }
+
+    public boolean theSame(Storable toCompare) {
+
+        Class<?>[] typesToCompare = toCompare.getTypes();
+
+        if(typesToCompare.length != types.length) {
+            return false;
+        }
+
+        for (int i = 0; i < types.length; i++) {
+            if (!types[i].equals(typesToCompare[i])) {
+                return false;
+            }
+        }
+
+        for (int i = 0; i < values.length; i++) {
+            try {
+                Object temp1 = toCompare.getColumnAt(i);
+                Object temp2 = this.getColumnAt(i);
+                if(temp1 == null || temp2 == null) {
+                    if(temp1 == null && temp2 == null) {
+                        continue;
+                    } else {
+                        return false;
+                    }
+                }
+                if(!temp1.equals(temp2)) {
+                    return false;
+                }
+            } catch (IndexOutOfBoundsException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Class<?>[] getTypes() {
+        return types;
     }
 
     public static boolean validStoreable(Storeable stor, List<Class<?>> types) {
