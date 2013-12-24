@@ -15,6 +15,7 @@ public class FileHashMap implements Table {
     private static final int NFILES = 16;
 
     private boolean exists;
+    private boolean closed;
     private File db;
     private FileMap[][] base;
     private FileMap[][] baseBackUp;
@@ -23,6 +24,7 @@ public class FileHashMap implements Table {
     public FileHashMap(File db) throws IOException {
         this.db = db;
         exists = true;
+        closed = false;
         base = new FileMap[NDIRS][NFILES];
         types = new ArrayList<>();
         readDB();
@@ -118,6 +120,23 @@ public class FileHashMap implements Table {
         return result;
     }
 
+    public void close() throws IOException {
+        rollback();
+        closed = true;
+    }
+
+    public void removeTable() {
+        exists = false;
+    }
+
+    public String toString() {
+        return getClass().getSimpleName() + "[" + db.getAbsolutePath() + "]";
+    }
+
+    protected boolean isClosed() {
+        return closed;
+    }
+
     private int compare(FileMap a, FileMap b) {
         int result = 0;
         Set<String> tmp = new TreeSet<>(a.getKeys());
@@ -137,18 +156,10 @@ public class FileHashMap implements Table {
         return result;
     }
 
-    public void checkExistence() {
-        if (!exists) {
+    private void checkExistence() {
+        if (!exists || closed) {
             throw new IllegalStateException();
         }
-    }
-
-    public void close() throws IOException {
-        writeDB();
-    }
-
-    public void removeTable() {
-        exists = false;
     }
 
     private int getDirNum(String key) {

@@ -14,9 +14,10 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 
-public class MultiFileHashMap implements TableProvider {
+public class MultiFileHashMap implements TableProvider, AutoCloseable {
     private File dir;
     private HashMap<String, FileHashMap> database;
+    private boolean exists;
 
     public MultiFileHashMap(String workingDir) throws IOException {
         database = new HashMap<>();
@@ -30,14 +31,29 @@ public class MultiFileHashMap implements TableProvider {
             FileHashMap base = new FileHashMap(temp);
             database.put(directory, base);
         }
+        exists = true;
+    }
+
+    public String toString() {
+        return getClass().getSimpleName() + "[" + dir.getAbsolutePath() + "]";
     }
 
     @Override
     public FileHashMap getTable(String name) {
+        checkExistence();
         if (!Utils.isValidTablename(name)) {
             throw new IllegalArgumentException();
         }
         if (database.containsKey(name)) {
+            if (database.get(name).isClosed()) {
+                try {
+                    File temp = new File(dir.getAbsoluteFile() + File.separator + name);
+                    FileHashMap base = new FileHashMap(temp);
+                    database.put(name, base);
+                } catch (IOException e) {
+                    return null;
+                }
+            }
             return database.get(name);
         } else {
             return null;
@@ -46,6 +62,7 @@ public class MultiFileHashMap implements TableProvider {
 
     @Override
     public FileHashMap createTable(String name, List<Class<?>> columnTypes) throws IOException {
+        checkExistence();
         if (!Utils.isValidTablename(name) || columnTypes == null || columnTypes.size() == 0) {
             throw new IllegalArgumentException();
         }
@@ -82,6 +99,7 @@ public class MultiFileHashMap implements TableProvider {
 
     @Override
     public void removeTable(String name) throws IOException {
+        checkExistence();
         if (!Utils.isValidTablename(name)) {
             throw new IllegalArgumentException();
         }
@@ -96,11 +114,13 @@ public class MultiFileHashMap implements TableProvider {
 
     @Override
     public Storeable deserialize(Table table, String value) throws ParseException {
+        checkExistence();
         return new Storable(Utils.getTableTypes(table), value);
     }
 
     @Override
     public String serialize(Table table, Storeable value) throws ColumnFormatException {
+        checkExistence();
         if (Storable.validStoreable(value, Utils.getTableTypes(table))) {
             return new Storable(Utils.getTableTypes(table), value).toString();
         } else {
@@ -110,15 +130,27 @@ public class MultiFileHashMap implements TableProvider {
 
     @Override
     public Storeable createFor(Table table) {
+        checkExistence();
         return new Storable(Utils.getTableTypes(table));
     }
 
     @Override
     public Storeable createFor(Table table, List<?> values) throws ColumnFormatException, IndexOutOfBoundsException {
+        checkExistence();
         return new Storable(Utils.getTableTypes(table), values);
     }
 
+    @Override
+    public void close() throws IOException {
+        checkExistence();
+        for (FileHashMap toClose: database.values()) {
+            toClose.close();
+        }
+        exists = false;
+    }
+
     public void stopUsing(String name) {
+        checkExistence();
         if (!Utils.isValidTablename(name)) {
             throw new IllegalArgumentException();
         }
@@ -126,4 +158,11 @@ public class MultiFileHashMap implements TableProvider {
             throw new IllegalStateException();
         }
     }
+
+    private void checkExistence() {
+        if (!exists) {
+            throw new IllegalStateException();
+        }
+    }
+
 }
