@@ -1,4 +1,4 @@
-package ru.fizteh.fivt.students.drozdowsky;
+package ru.fizteh.fivt.students.drozdowsky.Proxy;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationHandler;
@@ -41,7 +41,7 @@ public class LoggingXMLProxyInvocationHandler implements InvocationHandler{
                 StringWriter xmlResult  = new StringWriter();
                 this.xmlWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(xmlResult);
                 xmlWriter.writeStartElement("invoke");
-                xmlWriter.writeAttribute("timestamp", ((Long) System.currentTimeMillis()).toString());
+                xmlWriter.writeAttribute("timestamp", Long.valueOf(System.currentTimeMillis()).toString());
                 xmlWriter.writeAttribute("class", implementation.getClass().getName());
                 xmlWriter.writeAttribute("name", method.getName());
 
@@ -85,7 +85,6 @@ public class LoggingXMLProxyInvocationHandler implements InvocationHandler{
         if (object == null) {
             xmlWriter.writeEmptyElement("null");
         } else if (object instanceof Iterable) {
-            writtenObjects.clear();
             writeIterable((Iterable) object);
         } else {
             xmlWriter.writeCharacters(object.toString());

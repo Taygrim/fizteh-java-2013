@@ -1,6 +1,7 @@
-package ru.fizteh.fivt.students.drozdowsky;
+package ru.fizteh.fivt.students.drozdowsky.Proxy;
 
 import ru.fizteh.fivt.proxy.LoggingProxyFactory;
+import ru.fizteh.fivt.students.drozdowsky.Proxy.LoggingXMLProxyInvocationHandler;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.Writer;
