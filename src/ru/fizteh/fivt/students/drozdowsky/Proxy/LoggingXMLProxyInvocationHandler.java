@@ -70,6 +70,7 @@ public class LoggingXMLProxyInvocationHandler implements InvocationHandler{
                 }
 
                 xmlWriter.writeEndElement();
+                xmlWriter.flush();
                 writer.write(xmlWriter.toString() + System.lineSeparator());
             } catch (Exception e) {
                 //Not allowed
