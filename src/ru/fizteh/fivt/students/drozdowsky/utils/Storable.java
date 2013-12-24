@@ -35,6 +35,10 @@ public class Storable implements Storeable{
 
     public Storable(List<Class<?>> types, List<?> values) {
         this(types);
+        if (values == null) {
+            throw new IllegalArgumentException("Got null values");
+        }
+
         if (types.size() != this.values.length) {
             throw new IndexOutOfBoundsException();
         }
@@ -129,6 +133,10 @@ public class Storable implements Storeable{
     private Object getObjectWithTypeAt(int columnIndex, Class<?> type) {
         if (columnIndex < 0 || columnIndex >= values.length) {
             throw new IndexOutOfBoundsException();
+        }
+
+        if (type != types[columnIndex]) {
+            throw new ColumnFormatException("Not valid type");
         }
 
         if (values[columnIndex] == null || values[columnIndex].equals("null")) {
